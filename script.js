@@ -2,6 +2,35 @@ const addCartBtn = document.querySelectorAll('.add-to-cart-btn');
 const itemOnStore = document.getElementById('item');
 const table = document.querySelector('table');
 
+function productObj (itemName, itemDescription, itemQuantity, itemPrice, itemImage) {
+    return {
+        name: itemName,
+        description: itemDescription,
+        quantity: itemQuantity,
+        price: parseFloat(itemPrice.replace("$","")),
+        image: itemImage
+    }
+};
+
+
+
+function onAddItemCart(e) {
+    e.preventDefault(); // prevent form submission
+
+    const itemImage = e.target.parentElement.children[0].src; // navigate the DOM to find img source attribute
+    const itemName = e.target.parentElement.children[1].textContent; // navigate the DOM to find h3 text content
+    const itemDescription = e.target.parentElement.children[2].textContent; // navigate the DOM
+    const itemPrice = e.target.parentElement.children[3].textContent; // navigate the DOM to find 
+    const itemQuantity = 2;
+    
+    const product = productObj(itemName, itemDescription, itemQuantity, itemPrice, itemImage); //
+    
+    //console.log(product);
+    addCartToStorage(product) // add string to storage
+    addCartToDOM(product); // add to DOM
+
+}
+
 function getCartFromStorage() {
     let cartFromStorage; // assign a variable to contain array
 
@@ -14,27 +43,19 @@ function getCartFromStorage() {
     return cartFromStorage; //returns array
 }
 
-function onAddItemCart(e) {
-    e.preventDefault(); // prevent form submission
-
-    const item = e.target.parentElement.children[1].textContent; 
-    addCartToStorage(item) // add string to storage
-    addCartToDOM(item); // add to DOM
-
-}
-
-function addCartToStorage(item) { // arg accepts a string
+function addCartToStorage(item) { 
     const itemOnCart = getCartFromStorage(); // an array of cart from storage
     itemOnCart.push(item); // push string to array of cart
     localStorage.setItem('cart', JSON.stringify(itemOnCart)); // convert to string before storing
 }
 
 function addCartToDOM(item) { // arg accepts a string
-    const tmp = "xx";
 
     const tr = document.createElement('tr'); // create table row element
 
-    rowData = [item, tmp, tmp, tmp];         // create array of data to be stored 
+    itemTotal = `$${item.quantity * item.price}`;
+
+    rowData = [item.name, item.quantity, item.price, itemTotal];         // create array of data to be stored 
 
     rowData.forEach(data => {                // iterate over each data
         td = document.createElement('td');   // create a table data to insert each data
@@ -42,7 +63,9 @@ function addCartToDOM(item) { // arg accepts a string
         tr.appendChild(td);                  // append table data to table row
     });
 
+
     table.appendChild(tr);                   // append table row to table itself
+    
     
 }
 
