@@ -1,4 +1,4 @@
-const addCartBtn = document.getElementById('add-cart-btn');
+const addCartBtn = document.querySelectorAll('.add-to-cart-btn');
 const itemOnStore = document.getElementById('item');
 const table = document.querySelector('table');
 
@@ -17,8 +17,7 @@ function getCartFromStorage() {
 function onAddItemCart(e) {
     e.preventDefault(); // prevent form submission
 
-    const item = itemOnStore.children[1].textContent; // point to h3 tag and the string content
-    console.log(item);
+    const item = e.target.parentElement.children[1].textContent; 
     addCartToStorage(item) // add string to storage
     addCartToDOM(item); // add to DOM
 
@@ -33,18 +32,20 @@ function addCartToStorage(item) { // arg accepts a string
 function addCartToDOM(item) { // arg accepts a string
     const tmp = "xx";
 
-    const tr = document.createElement('tr');
+    const tr = document.createElement('tr'); // create table row element
 
-    rowData = [item, tmp, tmp, tmp];
+    rowData = [item, tmp, tmp, tmp];         // create array of data to be stored 
 
-    rowData.forEach(data => {
-        td = document.createElement('td');
-        td.textContent = data;
-        tr.appendChild(td);
+    rowData.forEach(data => {                // iterate over each data
+        td = document.createElement('td');   // create a table data to insert each data
+        td.textContent = data;               // insert text content of each data
+        tr.appendChild(td);                  // append table data to table row
     });
 
-    table.appendChild(tr);
+    table.appendChild(tr);                   // append table row to table itself
     
 }
 
-addCartBtn.addEventListener('click', onAddItemCart);
+addCartBtn.forEach(cartBtn => {
+    cartBtn.addEventListener('click', onAddItemCart);
+})
