@@ -1,74 +1,226 @@
+// Selectors for buttons and content areas
 const addCartBtn = document.querySelectorAll('.add-to-cart-btn');
-const itemOnStore = document.getElementById('item');
-const table = document.querySelector('table');
+const checkOutBtn = document.querySelector('.checkout-btn');
+const purchaseBtn = document.querySelector('.buy-btn');
+const cartContent = document.getElementById('cart-items');
+const checkOutContent = document.getElementById('checkout-items');
+const purchaseContent = document.getElementById('purchased-items');
+const cartBadge = document.getElementById('cart-badge'); // Badge for cart count
 
-function productObj (itemName, itemDescription, itemQuantity, itemPrice, itemImage) {
+// Create a product object with necessary details
+function createProduct(name, description, quantity, price, image) {
     return {
-        name: itemName,
-        description: itemDescription,
-        quantity: itemQuantity,
-        price: parseFloat(itemPrice.replace("$","")),
-        image: itemImage
-    }
-};
-
-
-
-function onAddItemCart(e) {
-    e.preventDefault(); // prevent form submission
-
-    const itemImage = e.target.parentElement.children[0].src; // navigate the DOM to find img source attribute
-    const itemName = e.target.parentElement.children[1].textContent; // navigate the DOM to find h3 text content
-    const itemDescription = e.target.parentElement.children[2].textContent; // navigate the DOM
-    const itemPrice = e.target.parentElement.children[3].textContent; // navigate the DOM to find 
-    const itemQuantity = 2;
-    
-    const product = productObj(itemName, itemDescription, itemQuantity, itemPrice, itemImage); //
-    
-    //console.log(product);
-    addCartToStorage(product) // add string to storage
-    addCartToDOM(product); // add to DOM
-
+        name,
+        description,
+        quantity,
+        price: parseFloat(price.replace("$", "")),
+        image
+    };
 }
 
+// Get cart items from localStorage
 function getCartFromStorage() {
-    let cartFromStorage; // assign a variable to contain array
+    return JSON.parse(localStorage.getItem('cart')) || [];
+}
 
-    if (localStorage.getItem('cart') === null) {
-        console.log("empty");
-        cartFromStorage = [];  // returns an empty array 
-    } else  {   
-        cartFromStorage = JSON.parse(localStorage.getItem('cart')); // convert local storage data (string) to array and store to variable
+// Save product to localStorage (with quantity update)
+function addCartToStorage(item) {
+    let cart = getCartFromStorage();
+    let existingProduct = cart.find((p) => p.name === item.name);
+    
+    if (existingProduct) {  
+        existingProduct.quantity += 1; // Increase quantity if already in cart
+    } else {
+        cart.push(item);
     }
-    return cartFromStorage; //returns array
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartBadge(); // Update badge
 }
 
-function addCartToStorage(item) { 
-    const itemOnCart = getCartFromStorage(); // an array of cart from storage
-    itemOnCart.push(item); // push string to array of cart
-    localStorage.setItem('cart', JSON.stringify(itemOnCart)); // convert to string before storing
+// Function to update the cart badge count
+function updateCartBadge() {
+    const cart = getCartFromStorage();
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+    if (totalItems > 0) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.visibility = "visible";
+
+        // Add animation effect
+        cartBadge.classList.add("updated");
+        setTimeout(() => {
+            cartBadge.classList.remove("updated");
+        }, 200);
+    } else {
+        cartBadge.style.visibility = "hidden";
+    }
 }
 
-function addCartToDOM(item) { // arg accepts a string
+// Add product to cart (localStorage only)
+function onAddItemCart(e) {
+    e.preventDefault();
+    const parent = e.target.closest('.product');
+    const product = createProduct(
+        parent.querySelector('h3').textContent,
+        parent.querySelector('p').textContent,
+        1,
+        parent.querySelector('.price').textContent,
+        parent.querySelector('img').src
+    );
 
-    const tr = document.createElement('tr'); // create table row element
+    addCartToStorage(product);
+}
 
-    itemTotal = `$${item.quantity * item.price}`;
+// Add product to cart table in DOM (cart.html only)
+function addCartToDOM(item) {
+    if (!cartContent) return; // Ensure element exists
 
-    rowData = [item.name, item.quantity, item.price, itemTotal];         // create array of data to be stored 
+    const tr = document.createElement('tr');
+    const itemTotal = `$${(item.quantity * item.price).toFixed(2)}`;
+    const rowData = [item.name, item.quantity, `$${item.price.toFixed(2)}`, itemTotal];
 
-    rowData.forEach(data => {                // iterate over each data
-        td = document.createElement('td');   // create a table data to insert each data
-        td.textContent = data;               // insert text content of each data
-        tr.appendChild(td);                  // append table data to table row
+    rowData.forEach(data => {
+        const td = document.createElement('td');
+        td.textContent = data;
+        tr.appendChild(td);
     });
 
-
-    table.appendChild(tr);                   // append table row to table itself
-    
-    
+    cartContent.appendChild(tr);
 }
 
-addCartBtn.forEach(cartBtn => {
-    cartBtn.addEventListener('click', onAddItemCart);
-})
+// Handle checkout
+function onCheckOut(e) {
+    e.preventDefault();
+    const cart = getCartFromStorage();
+
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    addCheckOutToStorage(cart);
+    localStorage.removeItem('cart'); // Clear cart
+    updateCartBadge(); // Update badge
+    cartContent.innerHTML = ''; // Clear cart table in DOM
+
+    cart.forEach(item => addCheckOutToDOM(item));
+}
+
+// Save checkout items to localStorage
+function addCheckOutToStorage(cart) {
+    localStorage.setItem('checkout', JSON.stringify(cart));
+}
+
+// Add product to checkout table in DOM
+function addCheckOutToDOM(item) {
+    const tr = document.createElement('tr');
+    const itemTotal = `$${(item.quantity * item.price).toFixed(2)}`;
+    const rowData = [item.name, item.quantity, `$${item.price.toFixed(2)}`, itemTotal];
+
+    rowData.forEach(data => {
+        const td = document.createElement('td');
+        td.textContent = data;
+        tr.appendChild(td);
+    });
+
+    checkOutContent.appendChild(tr);
+}
+
+// Handle purchase
+function onPurchase(e) {
+    e.preventDefault();
+    const checkout = JSON.parse(localStorage.getItem('checkout')) || [];
+
+    if (checkout.length === 0) {
+        alert("Your checkout is empty!");
+        return;
+    }
+
+    addPurchaseToStorage(checkout);
+    localStorage.removeItem('checkout');
+    checkOutContent.innerHTML = ''; // Clear checkout table in DOM
+
+    checkout.forEach(item => addPurchaseToDOM(item));
+}
+
+// Save purchased items to localStorage
+function addPurchaseToStorage(checkout) {
+    localStorage.setItem('purchase', JSON.stringify(checkout));
+}
+
+// Add product to purchased table in DOM
+function addPurchaseToDOM(item) {
+    if (!purchaseContent) return;
+
+    const tr = document.createElement('tr');
+    const itemTotal = `$${(item.quantity * item.price).toFixed(2)}`;
+    const rowData = [item.name, item.quantity, `$${item.price.toFixed(2)}`, itemTotal];
+
+    rowData.forEach(data => {
+        const td = document.createElement('td');
+        td.textContent = data;
+        tr.appendChild(td);
+    });
+
+    const statusTd = document.createElement('td');
+    const status = document.createElement('span');
+    const actionBtn = document.createElement('button');
+
+    actionBtn.innerHTML = "✔";
+    actionBtn.classList.add('mark-success-btn');
+    status.textContent = "In Transit";
+
+    statusTd.appendChild(status);
+    statusTd.appendChild(actionBtn);
+    tr.appendChild(statusTd);
+
+    actionBtn.addEventListener('click', () => {
+        if (actionBtn.innerHTML === "✔") {
+            status.textContent = "Delivered";
+            actionBtn.innerHTML = "✖";
+            actionBtn.classList.remove('mark-success-btn');
+            actionBtn.classList.add('remove-purchase-btn');
+        } else {
+            tr.remove();
+            let purchases = JSON.parse(localStorage.getItem('purchase')) || [];
+            purchases = purchases.filter(p => p.name !== item.name);
+            localStorage.setItem('purchase', JSON.stringify(purchases));
+        }
+    });
+
+    purchaseContent.appendChild(tr);
+}
+
+// Event listeners and DOMContentLoaded logic
+document.addEventListener('DOMContentLoaded', () => {
+    updateCartBadge(); // Update badge on load
+
+    // Cart Page: Load cart items
+    if (cartContent) {
+        getCartFromStorage().forEach(addCartToDOM);
+    }
+
+    // Checkout Page: Load checkout items
+    if (checkOutContent) {
+        JSON.parse(localStorage.getItem('checkout') || "[]").forEach(addCheckOutToDOM);
+    }
+
+    // Purchased Page: Load purchased items
+    if (purchaseContent) {
+        JSON.parse(localStorage.getItem('purchase') || "[]").forEach(addPurchaseToDOM);
+    }
+
+    // Attach event listeners for buttons
+    if (checkOutBtn) {
+        checkOutBtn.addEventListener('click', onCheckOut);
+    }
+
+    if (purchaseBtn) {
+        purchaseBtn.addEventListener('click', onPurchase);
+    }
+
+    if (addCartBtn.length > 0) {
+        addCartBtn.forEach(btn => btn.addEventListener('click', onAddItemCart));
+    }
+});

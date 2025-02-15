@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive E-Commerce Layout</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>Template</h1>
+        <nav>
+            <a href="home.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="cart.html" class="cart-link">
+                My Cart <span id="cart-badge" class="cart-badge">0</span>
+            </a>
+            
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Cart Section -->
+        <section id="my-cart" class="cart-grid">
+            <h2>My Cart</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-items">
+                    <!-- Cart items will be added dynamically -->
+                </tbody>
+            </table>
+            <button type="button" class="checkout-btn">Checkout</button>
+        </section>
+
+        <!-- Checkout Section -->
+        <section id="my-checkout" class="checkout-grid">
+            <h2>Checkout</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="checkout-items">
+                    <!-- Checkout items will be added dynamically -->
+                </tbody>
+            </table>
+            <button type="button" class="buy-btn">Purchase</button>
+        </section>
+
+        <!-- Purchased Section -->
+        <section id="my-purchased" class="purchased-grid">
+            <h2>Purchased</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Delivery Status</th>
+                    </tr>
+                </thead>
+                <tbody id="purchased-items">
+                    <!-- purchased items will be added dynamically -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 My E-Commerce Store. All rights reserved.</p>
+    </footer>       
+
+    <script src="script.js" defer></script>
+</body>
+</html>
+    
